@@ -1,6 +1,6 @@
 /* todo sækja pakka sem vantar  */
-
-const connectionString = process.env.DATABASE_URL;
+const { Client } = require('pg');
+const connectionString = process.env.DATABASE_URL || 'postgres://hugrungudmundsdottir:hugrun94@localhost/gagnagrunnur';
 
 /**
  * Create a note asynchronously.
@@ -14,6 +14,27 @@ const connectionString = process.env.DATABASE_URL;
  */
 async function create({ title, text, datetime } = {}) {
   /* todo útfæra */
+
+  const client = new Client({ connectionString });
+
+  await client.connect();
+
+  try {
+    const boi = 'INSERT INTO notes(title, text, datetime) VALUES($1,$2,$3) RETURNING *';
+    const values = [title, text, datetime];
+    const result = await client.query(boi, values);
+
+
+    const { rows } = result;
+    return rows;
+
+  } catch (err) {
+      console.error('Error running query');
+      throw err;
+  } finally {
+    console.log('end')
+    await client.end();
+  }
 }
 
 /**
@@ -22,7 +43,22 @@ async function create({ title, text, datetime } = {}) {
  * @returns {Promise} Promise representing an array of all note objects
  */
 async function readAll() {
-  /* todo útfæra */
+
+  const client = new Client({ connectionString });
+
+  await client.connect();
+
+  try {
+    const result = await client.query('SELECT * FROM notes');
+
+    const { rows } = result;
+    return rows;
+  } catch (err) {
+    console.error('Error running query');
+    throw err;
+  } finally {
+    await client.end();
+  }
 }
 
 /**
@@ -34,6 +70,25 @@ async function readAll() {
  */
 async function readOne(id) {
   /* todo útfæra */
+
+  const client = new Client({ connectionString });
+
+  await client.connect();
+
+  try {
+    const result = await client.query('SELECT * FROM notes WHERE id=($1)',[id]);
+
+    const { rows } = result;
+    if (rows.length === 0) {
+      return null;
+    }
+    return rows;
+  } catch (err) {
+    console.error('Error running query');
+    throw err;
+  } finally {
+    await client.end();
+  }
 }
 
 /**
@@ -49,6 +104,27 @@ async function readOne(id) {
  */
 async function update(id, { title, text, datetime } = {}) {
   /* todo útfæra */
+
+  const client = new Client({ connectionString });
+
+  await client.connect();
+
+  try {
+    const boi = 'UPDATE notes SET title = ($1), text = ($2), datetime = ($3) WHERE id = ($4) RETURNING *';
+    const result = await client.query(boi, [title, text, datetime, id]);
+
+
+    const { rows } = result;
+    if (rows.length === 0) {
+      return null;
+    }
+    return rows;
+  } catch (err) {
+    console.error('Error running query');
+    throw err;
+  } finally {
+    await client.end();
+  }
 }
 
 /**
@@ -60,6 +136,26 @@ async function update(id, { title, text, datetime } = {}) {
  */
 async function del(id) {
   /* todo útfæra */
+
+  const client = new Client({ connectionString });
+
+  await client.connect();
+
+  try {
+    const values = [id];
+    const result = await client.query('DELETE FROM notes WHERE id = $1 RETURNING *',values);
+
+    if (result.rowCount === 1) {
+      return true;
+    }
+    return false;
+
+  } catch (err) {
+    console.error('Error running query');
+    throw err;
+  } finally {
+    await client.end();
+  }
 }
 
 module.exports = {
