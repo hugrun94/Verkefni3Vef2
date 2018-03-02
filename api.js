@@ -3,7 +3,7 @@ const { check, validationResult } = require('express-validator/check');
 const { sanitize } = require('express-validator/filter');
 const xss = require('xss');
 
-const  {
+const {
   create,
   readAll,
   readOne,
@@ -14,7 +14,7 @@ const  {
 
 const router = express.Router();
 
-//laga villur
+// laga villur
 
 const formValidation = [
   check('title')
@@ -32,7 +32,7 @@ const formValidation = [
   sanitize('title').trim(),
 ];
 
-router.post('/',formValidation, async (req, res) => {
+router.post('/', formValidation, async (req, res) => {
   const {
     body: {
       title = '',
@@ -52,46 +52,44 @@ router.post('/',formValidation, async (req, res) => {
   if (!validation.isEmpty()) {
     const errors = validation.array();
     const listErrors = [];
-    for(let i = 0; i < errors.length; i++){
+    for (let i = 0; i < errors.length; i += 1) {
       listErrors.push({
         field: errors[i].param,
         error: errors[i].msg,
       });
-  }
+    }
     return res.status(400).json(listErrors);
   }
 
   const want = await create(data);
   return res.status(201).json(want);
-
 });
 
-router.get('/:id', async(req, res) => {
+router.get('/:id', async (req, res) => {
   const { id } = req.params;
   const want = await readOne(id);
-  if(want){
+  if (want) {
     return res.status(200).json(want);
   }
-    return res.status(404).json({ error: 'Note not found' });
+  return res.status(404).json({ error: 'Note not found' });
 });
 
-router.get('/', async(req, res) => {
+router.get('/', async (req, res) => {
   const want = await readAll();
   return res.status(200).json(want);
-
 });
 
-router.put('/:id',formValidation, async(req, res) => {
-    const { id } = req.params;
-    const {
-      body: {
-        title = '',
-        text = '',
-        datetime = '',
-      } = {},
-    } = req;
+router.put('/:id', formValidation, async (req, res) => {
+  const { id } = req.params;
+  const {
+    body: {
+      title = '',
+      text = '',
+      datetime = '',
+    } = {},
+  } = req;
 
-    const data = {
+  const data = {
     title: xss(title),
     text: xss(text),
     datetime: xss(datetime),
@@ -102,32 +100,29 @@ router.put('/:id',formValidation, async(req, res) => {
   if (!validation.isEmpty()) {
     const errors = validation.array();
     const listErrors = [];
-    for(let i = 0; i < errors.length; i++){
+    for (let i = 0; i < errors.length; i += 1) {
       listErrors.push({
         field: errors[i].param,
         error: errors[i].msg,
       });
+    }
+    return res.status(400).json(listErrors);
   }
-    return res.status(400).json(errorList);
-  }
-  const want = await update(id,data);
-  if(want){
+  const want = await update(id, data);
+  if (want) {
     return res.status(201).json(want);
   }
   return res.status(404).json({ error: 'Note not found' });
-
-  
 });
 
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   const want = await del(id);
-  if(want){
+  if (want) {
     return res.status(200).json();
   }
-    return res.status(404).json({ error: 'Note not found' });
-
+  return res.status(404).json({ error: 'Note not found' });
 });
 
 

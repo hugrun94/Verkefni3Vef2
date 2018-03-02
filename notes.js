@@ -1,5 +1,6 @@
 /* todo sækja pakka sem vantar  */
 const { Client } = require('pg');
+
 const connectionString = process.env.DATABASE_URL || 'postgres://hugrungudmundsdottir:hugrun94@localhost/gagnagrunnur';
 
 /**
@@ -27,12 +28,10 @@ async function create({ title, text, datetime } = {}) {
 
     const { rows } = result;
     return rows;
-
   } catch (err) {
-      console.error('Error running query');
-      throw err;
+    console.error('Error running query');
+    throw err;
   } finally {
-    console.log('end')
     await client.end();
   }
 }
@@ -43,7 +42,6 @@ async function create({ title, text, datetime } = {}) {
  * @returns {Promise} Promise representing an array of all note objects
  */
 async function readAll() {
-
   const client = new Client({ connectionString });
 
   await client.connect();
@@ -76,7 +74,7 @@ async function readOne(id) {
   await client.connect();
 
   try {
-    const result = await client.query('SELECT * FROM notes WHERE id=($1)',[id]);
+    const result = await client.query('SELECT * FROM notes WHERE id=($1)', [id]);
 
     const { rows } = result;
     if (rows.length === 0) {
@@ -143,13 +141,12 @@ async function del(id) {
 
   try {
     const values = [id];
-    const result = await client.query('DELETE FROM notes WHERE id = $1 RETURNING *',values);
+    const result = await client.query('DELETE FROM notes WHERE id = $1 RETURNING *', values);
 
     if (result.rowCount === 1) {
       return true;
     }
     return false;
-
   } catch (err) {
     console.error('Error running query');
     throw err;
